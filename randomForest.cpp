@@ -17,6 +17,20 @@ vector<vector<int>> get_random_samples(const vector<vector<int>> &samples,
     // Intoarce un vector de marime num_to_return cu elemente random,
     // diferite din samples
     vector<vector<int>> ret;
+    int samplesSize = samples.size();
+    bool *pushed = new bool[samplesSize];
+    for (int i = 0; i < samplesSize; ++i)
+        pushed[i] = false;
+    int x = 0;
+    for (int i = 0; i < num_to_return; ++i){
+        x = rand() % samplesSize;
+        while(pushed[x] == true){
+            x = rand() % samplesSize;
+        }
+        pushed[x] = true;
+        ret.push_back(samples.at(x));
+    }
+    ret.resize(num_to_return);
     return ret;
 }
 
