@@ -18,14 +18,15 @@ vector<vector<int>> get_random_samples(const vector<vector<int>> &samples,
     // diferite din samples
     vector<vector<int>> ret;
     int samplesSize = samples.size();
+    unsigned int randValue = (unsigned int) num_to_return;
     bool *pushed = new bool[samplesSize];
     for (int i = 0; i < samplesSize; ++i)
         pushed[i] = false;
-    int x = 0;
+    unsigned int x = 0;
     for (int i = 0; i < num_to_return; ++i){
-        x = rand() % samplesSize;
-        while(pushed[x] == true){
-            x = rand() % samplesSize;
+        x = rand_r(&randValue) % samplesSize;
+        while (pushed[x] == true){
+            x = rand_r(&randValue) % samplesSize;
         }
         pushed[x] = true;
         ret.push_back(samples.at(x));

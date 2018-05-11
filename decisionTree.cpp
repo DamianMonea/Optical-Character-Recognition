@@ -7,10 +7,10 @@
 #include <iostream>
 #include <limits>
 #include <memory>
+#include <string>
 #include <unordered_map>
 #include <utility>
 #include <vector>
-#include <string>
 
 using std::string;
 using std::pair;
@@ -127,6 +127,14 @@ vector<int> compute_unique(const vector<vector<int>> &samples, const int col) {
     // Intoarce toate valorile (se elimina duplicatele)
     // care apar in setul de teste, pe coloana col
     vector<int> uniqueValues;
+    int samplesSize = samples.size();
+    for (int i = 0; i < samplesSize; ++i){
+        if (std::find(uniqueValues.begin(),
+                    uniqueValues.end(),
+                    samples[i][col]) == uniqueValues.end()){
+            uniqueValues.push_back(samples[i][col]);
+        }
+    }
     return uniqueValues;
 }
 
@@ -151,6 +159,15 @@ pair<vector<int>, vector<int>> get_split_as_indexes(
     // Intoarce indecsii sample-urilor din cele 2 subseturi obtinute in urma
     // separarii in functie de split_index si split_value
     vector<int> left, right;
+    int samplesSize = samples.size();
+    for (int i = 0; i < samplesSize; ++i){
+        if (samples[i][split_index] <= split_value){
+            left.push_back(i);
+        }
+        if (samples[i][split_index] > split_value){
+            right.push_back(i);
+        }
+    }
     return make_pair(left, right);
 }
 
@@ -158,20 +175,24 @@ vector<int> random_dimensions(const int size) {
     // TODO(you)
     // Intoarce sqrt(size) dimensiuni diferite pe care sa caute splitul maxim
     // Precizare: Dimensiunile gasite sunt > 0 si < size
+    unsigned int randValue = (unsigned int) size;
+    randValue = rand_r(&randValue);
+    randValue *= randValue;
+    randValue +=1;
     int dimension = floor(sqrt(size));
     vector<int> rez;
     for (int i = 0; i < dimension; ++i) {
         if (i == 0) {
-            int tmp = rand() % size;
+            int tmp = rand_r(&randValue) % size;
             while (tmp == 0) {
-                tmp = rand() % size;
+                tmp = rand_r(&randValue) % size;
             }
             rez.push_back(tmp);
         } else {
             int j = 0;
-            int tmp = rand() % size;
-            while((tmp == 0 || rez[j] == tmp) && j != i) {
-                tmp = rand() % size;
+            int tmp = rand_r(&randValue) % size;
+            while ((tmp == 0 || rez[j] == tmp) && j < i) {
+                tmp = rand_r(&randValue) % size;
                 ++j;
             }
             rez.push_back(tmp);

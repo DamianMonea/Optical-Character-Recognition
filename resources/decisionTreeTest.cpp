@@ -55,8 +55,9 @@ int test_same_class() {
     }
 
     if (num_correct != num_tests) {
-        std::cerr << "Tests failed: ";
-        for (size_t i = 0; i < wrong_answers.size(); i++) std::cerr << i << " ";
+        std::cerr << "Failed: ";
+        for (size_t i = 0; i < wrong_answers.size(); i++)
+            std::cerr << wrong_answers[i] + 1 << " ";
         std::cerr << std::endl;
     }
     return num_correct;
@@ -98,8 +99,9 @@ int test_random_dimensions() {
     }
 
     if (num_correct != num_tests) {
-        std::cerr << "Tests failed: ";
-        for (size_t i = 0; i < wrong_answers.size(); i++) std::cerr << i << " ";
+        std::cerr << "Failed: ";
+        for (size_t i = 0; i < wrong_answers.size(); i++)
+            std::cerr << wrong_answers[i] + 1 << " ";
         std::cerr << std::endl;
     }
     return num_correct;
@@ -127,7 +129,7 @@ int test_compute_unique() {
         // Format teste: prima linie n, m, col
         // Pe fiecare din urm n linii: cate m elemente
 
-        int n, m, elem, col;
+        int n, m, elem, col, ref_n;
         in >> n >> m >> col;
         std::vector<std::vector<int>> samples;
         std::vector<int> temp;
@@ -143,12 +145,14 @@ int test_compute_unique() {
 
         // read the ref file
         vector<int> ref_result;
-        for (int j = 0; j < n; j++) {
+        ref >> ref_n;
+        for (int j = 0; j < ref_n; j++) {
             ref >> elem;
             ref_result.push_back(elem);
         }
 
         vector<int> result = compute_unique(samples, col);
+
         if (result.size() != ref_result.size()) {
             wrong_answers.push_back(i);
             continue;
@@ -156,7 +160,7 @@ int test_compute_unique() {
 
         bool ok = 1;
         sort(result.begin(), result.end());
-        for (int j = 0; j < n; j++) {
+        for (size_t j = 0; j < ref_result.size(); j++) {
             if (result[j] != ref_result[j]) {
                 ok = 0;
                 break;
@@ -170,8 +174,9 @@ int test_compute_unique() {
     }
 
     if (num_correct != num_tests) {
-        std::cerr << "Tests failed: ";
-        for (size_t i = 0; i < wrong_answers.size(); i++) std::cerr << i << " ";
+        std::cerr << "Failed: ";
+        for (size_t i = 0; i < wrong_answers.size(); i++)
+            std::cerr << wrong_answers[i] + 1 << " ";
         std::cerr << std::endl;
     }
     return num_correct;
@@ -244,8 +249,9 @@ int test_get_split_as_indexes() {
     }
 
     if (num_correct != num_tests) {
-        std::cerr << "Tests failed: ";
-        for (size_t i = 0; i < wrong_answers.size(); i++) std::cerr << i << " ";
+        std::cerr << "Failed: ";
+        for (size_t i = 0; i < wrong_answers.size(); i++)
+            std::cerr << wrong_answers[i] + 1 << " ";
         std::cerr << std::endl;
     }
     return num_correct;

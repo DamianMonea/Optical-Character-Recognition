@@ -55,7 +55,8 @@ int test_get_random_samples() {
 
     if (num_correct != num_tests) {
         std::cerr << "Tests failed: ";
-        for (size_t i = 0; i < wrong_answers.size(); i++) std::cerr << i << " ";
+        for (size_t i = 0; i < wrong_answers.size(); i++)
+            std::cerr << wrong_answers[i] + 1 << " ";
         std::cerr << std::endl;
     }
     return num_correct;
