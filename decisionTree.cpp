@@ -62,6 +62,12 @@ void Node::make_leaf(const vector<vector<int>> &samples,
     }
 }
 
+float calculateInformationGain(vector<vector<int>> &samples, int splitIndex){
+    float result = 0;
+    result += ent
+    pair<vector<vector<int>>, vector<vector<int>>> children = split(samples, splitIndex);
+}
+
 pair<int, int> find_best_split(const vector<vector<int>> &samples,
                                const vector<int> &dimensions) {
     // TODO(you)
@@ -70,7 +76,13 @@ pair<int, int> find_best_split(const vector<vector<int>> &samples,
     // ne referim la split-ul care maximizeaza IG
     // pair-ul intors este format din (split_index, split_value)
 
+    vector<float> IGs(dimensions.size(), 0);
+    int dimSize = dimensions.size(0;)
     int splitIndex = -1, splitValue = -1;
+    for(int i = 0; i < dimSize; ++i){
+        IGs.push_back(calculateInformationGain(samples, dimensions[i]));
+    }
+
     return pair<int, int>(splitIndex, splitValue);
 }
 
@@ -86,6 +98,11 @@ void Node::train(const vector<vector<int>> &samples) {
 int Node::predict(const vector<int> &image) const {
     // TODO(you)
     // Intoarce rezultatul prezis de catre decision tree
+    if(image[split_index] <= split_value){
+        return left->predict(image);
+    }else{
+        return right->predict(image);
+    }
     return 0;
 }
 
@@ -119,7 +136,19 @@ float get_entropy_by_indexes(const vector<vector<int>> &samples,
     // Intoarce entropia subsetului din setul de teste total(samples)
     // Cu conditia ca subsetul sa contina testele ale caror indecsi se gasesc in
     // vectorul index (Se considera doar liniile din vectorul index)
-    return 0.0f;
+    float entropy = 0.0f;
+    int indexSize = index.size();
+    vector<int> no_tests(10, 0);
+    for (int i = 0; i < 10; ++i) {
+        ++no_tests[samples[index[i]][0]];
+    }
+    for (int i = 0; i < 10; ++i) {
+        if (no_tests[i] != 0) {
+            int p = no_tests[i] / indexSize;
+            entropy -= p * log2 (p);
+        }
+    }
+    return entropy;
 }
 
 vector<int> compute_unique(const vector<vector<int>> &samples, const int col) {
