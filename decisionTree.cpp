@@ -62,10 +62,14 @@ void Node::make_leaf(const vector<vector<int>> &samples,
     }
 }
 
-float calculateInformationGain(vector<vector<int>> &samples, int splitIndex){
+float calculateInformationGain(vector<vector<int>> samples, int splitIndex, int splitValue){
     float result = 0;
-    result += ent
-    pair<vector<vector<int>>, vector<vector<int>>> children = split(samples, splitIndex);
+    result += get_entropy(samples);
+    pair<vector<vector<int>>, vector<vector<int>>> children = split(samples, splitIndex, splitValue);
+    vector<vector<int>> left = children.first;
+    vector<vector<int>> right = children.second;
+    result -= (left.size() * get_entropy(left) + right.size() * get_entropy(right))/samples.size();
+    return result;
 }
 
 pair<int, int> find_best_split(const vector<vector<int>> &samples,
@@ -76,13 +80,28 @@ pair<int, int> find_best_split(const vector<vector<int>> &samples,
     // ne referim la split-ul care maximizeaza IG
     // pair-ul intors este format din (split_index, split_value)
 
-    vector<float> IGs(dimensions.size(), 0);
-    int dimSize = dimensions.size(0;)
+    float maxIG;
+    float aux;
+    float maxim = -1000;
+    int dimSize = dimensions.size();
+    int samplesSize = samples.size();
     int splitIndex = -1, splitValue = -1;
+    vector<int> frequency(256, 0);
     for(int i = 0; i < dimSize; ++i){
-        IGs.push_back(calculateInformationGain(samples, dimensions[i]));
+        for(int j = 0; j < samplesSize; ++j){
+            frequency[samples[j][dimensions[i]]]++;
+        }
+        for(int j = 0; j < 256; ++j){
+            if(frequency[j] > 0){
+                aux = calculateInformationGain(samples, dimensions[i], j);
+            }
+            if(aux > maxim){
+                maxim = aux;
+                splitValue = j;
+                splitIndex = dimensions[i];
+            }
+        }
     }
-
     return pair<int, int>(splitIndex, splitValue);
 }
 
