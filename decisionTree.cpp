@@ -51,7 +51,7 @@ void Node::make_leaf(const vector<vector<int>> &samples,
                 most_wanted[i]++;
             }
         }
-        int max = 0;
+        int max = std::numeric_limits<int>::min();
         for (int i = 0; i < samplesSize; ++i) {
             if (most_wanted[i] > max) {
                 max = most_wanted[i];
@@ -62,7 +62,8 @@ void Node::make_leaf(const vector<vector<int>> &samples,
     }
 }
 
-float calculateInformationGain(vector<vector<int>> samples, int splitIndex, int splitValue){
+float calculateInformationGain(const vector<vector<int>>& samples,
+                                int splitIndex, int splitValue){
     float result = 0;
     if (!samples.empty()) {
         result += get_entropy(samples);
@@ -78,6 +79,7 @@ float calculateInformationGain(vector<vector<int>> samples, int splitIndex, int 
     return result;
 }
 
+
 pair<int, int> find_best_split(const vector<vector<int>> &samples,
                                const vector<int> &dimensions) {
     // TODO(you)
@@ -85,23 +87,22 @@ pair<int, int> find_best_split(const vector<vector<int>> &samples,
     // primite. Prin cel mai bun split (dimensiune si valoare)
     // ne referim la split-ul care maximizeaza IG
     // pair-ul intors este format din (split_index, split_value)
-
-    float maxIG;
     float aux;
-    float maxim = -1000;
+    float maxim = std::numeric_limits<int>::min();
     int dimSize = dimensions.size();
     int samplesSize = samples.size();
     int splitIndex = -1, splitValue = -1;
     vector<int> frequency(256, 0);
-    for(int i = 0; i < dimSize; ++i){
-        for(int j = 0; j < samplesSize; ++j){
+    for (int i = 0; i < dimSize; ++i){
+        for (int j = 0; j < samplesSize; ++j){
             frequency[samples[j][dimensions[i]]]++;
         }
-        for(int j = 0; j < 256; ++j){
-            if(frequency[j] > 0){
+        for (int j = 0; j < 256; ++j){
+            if (frequency[j] > 0){
                 aux = calculateInformationGain(samples, dimensions[i], j);
             }
-            if(aux > maxim){
+            if (aux > maxim){
+                std::cout << aux << " " << std::endl;
                 maxim = aux;
                 splitValue = j;
                 splitIndex = dimensions[i];
@@ -118,28 +119,23 @@ void Node::train(const vector<vector<int>> &samples) {
     // Daca da, acest nod devine frunza, altfel continua algoritmul.
     // 2) Daca nu exista niciun split valid, acest nod devine frunza. Altfel,
     // ia cel mai bun split si continua recursiv
-    bool is_single_class = true;
-    int samplesSize = samples.size();
-    for (int i = 0; i < samplesSize - 1; ++i) {
-        if (samples[i][0] != samples[i+1][0]) {
-            is_single_class = false;
-        }
-    }
+    bool is_single_class = same_class(samples);
     if (is_single_class == true) {
         make_leaf(samples, is_single_class);
     } else {
-        vector<int> dimensions = random_dimensions(785);
-        int index = find_best_split(samples, dimensions).first;
-        int split_val = find_best_split(samples, dimensions).second;
-        if (split_val == -1) {
+        vector<int> dimensions = random_dimensions(samples[0].size());
+        pair<int, int> find_split = find_best_split(samples, dimensions);
+        int index = find_split.first;
+        int val = find_split.second;
+        if (val == -1 && index == -1) {
             make_leaf(samples, is_single_class);
         } else {
-            vector<std::vector<int>> samples_left =
-            split(samples, index, split_val).first;
-            vector<std::vector<int>> samples_right =
-            split(samples, index, split_val).second;
-            train(samples_left);
-            train(samples_right);
+            std::shared_ptr<Node> left(new Node);
+            std::shared_ptr<Node> right(new Node);
+            pair<vector<std::vector<int>>, vector<std::vector<int>>> split_samples =
+            split(samples, index, val);
+            left->train(split_samples.first);
+            right->train(split_samples.second);
         }
     }
 }
@@ -147,12 +143,14 @@ void Node::train(const vector<vector<int>> &samples) {
 int Node::predict(const vector<int> &image) const {
     // TODO(you)
     // Intoarce rezultatul prezis de catre decision tree
-    if(image[split_index] <= split_value){
+    if (is_leaf == true) {
+        return result;
+    }
+    if (image[split_index - 1] <= split_value) {
         return left->predict(image);
-    }else{
+    } else {
         return right->predict(image);
     }
-    return 0;
 }
 
 bool same_class(const vector<vector<int>> &samples) {
@@ -161,9 +159,11 @@ bool same_class(const vector<vector<int>> &samples) {
     // clasa(rezultat). Este folosit in train pentru a determina daca
     // mai are rost sa caute split-uri
     int samplesSize = samples.size();
-    for (int i = 0; i < samplesSize - 1; ++i) {
-        if (samples[i][0] != samples[i + 1][0])
+    int first = samples[0][0];
+    for (int i = 1; i < samplesSize; ++i) {
+        if (first != samples[i][0]) {
             return false;
+        }
     }
     return true;
 }
@@ -188,13 +188,13 @@ float get_entropy_by_indexes(const vector<vector<int>> &samples,
     float entropy = 0.0f;
     int indexSize = index.size();
     vector<int> no_tests(10, 0);
-    for (int i = 0; i < 10; ++i) {
-        ++no_tests[samples[index[i]][0]];
+    for (int i : index) {
+        ++no_tests[samples[i][0]];
     }
-    for (int i = 0; i < 10; ++i) {
-        if (no_tests[i] != 0) {
-            int p = no_tests[i] / indexSize;
-            entropy -= p * log2 (p);
+    for (int j : no_tests) {
+        if (j != 0) {
+            int p = j / indexSize;
+            entropy -= p * log2(p);
         }
     }
     return entropy;
@@ -205,14 +205,15 @@ vector<int> compute_unique(const vector<vector<int>> &samples, const int col) {
     // Intoarce toate valorile (se elimina duplicatele)
     // care apar in setul de teste, pe coloana col
     vector<int> uniqueValues;
+    int freq[256];
+    for(int i = 0; i < 256; i++)
+        freq[i] = 0;
     int samplesSize = samples.size();
-    for (int i = 0; i < samplesSize; ++i){
-        if (std::find(uniqueValues.begin(),
-                    uniqueValues.end(),
-                    samples[i][col]) == uniqueValues.end()){
-            uniqueValues.push_back(samples[i][col]);
-        }
-    }
+    for(int i = 0; i < samplesSize; i++)
+        freq[samples[i][col]]++;
+    for(int i = 0; i < 256; i++)
+        if(freq[i] > 0)
+            uniqueValues.push_back(i);
     return uniqueValues;
 }
 
