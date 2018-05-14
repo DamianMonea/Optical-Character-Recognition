@@ -74,7 +74,8 @@ float calculateInformationGain(const vector<vector<int>>& samples,
     vector<int>& right = children.second;
     if (!left.empty() && !right.empty()) {
         result -= (left.size() * get_entropy_by_indexes(samples, left)
-                + right.size() * get_entropy_by_indexes(samples, right))/samples.size();
+                + right.size() * get_entropy_by_indexes(samples, right))
+                /samples.size();
     }
     return result;
 }
@@ -92,19 +93,15 @@ pair<int, int> find_best_split(const vector<vector<int>> &samples,
     int dimSize = dimensions.size();
     int samplesSize = samples.size();
     int splitIndex = -1, splitValue = -1;
-    vector<int> frequency(256, 0);
+    vector<int> unique_values;
     for (int i = 0; i < dimSize; ++i){
-        for (int j = 0; j < samplesSize; ++j){
-            frequency[samples[j][dimensions[i]]]++;
-        }
-        for (int j = 0; j < 256; ++j){
-            if (frequency[j] > 0){
-                aux = calculateInformationGain(samples, dimensions[i], j);
-            }
+        unique_values = compute_unique(samples, dimensions[i]);
+        for (auto value : unique_values){
+            aux = calculateInformationGain(samples, dimensions[i], value);
             if (aux > maxim){
                 std::cout << aux << " " << std::endl;
                 maxim = aux;
-                splitValue = j;
+                splitValue = value;
                 splitIndex = dimensions[i];
             }
         }
@@ -122,6 +119,7 @@ void Node::train(const vector<vector<int>> &samples) {
     bool is_single_class = same_class(samples);
     if (is_single_class == true) {
         make_leaf(samples, is_single_class);
+        return;
     } else {
         vector<int> dimensions = random_dimensions(samples[0].size());
         pair<int, int> find_split = find_best_split(samples, dimensions);
@@ -129,11 +127,11 @@ void Node::train(const vector<vector<int>> &samples) {
         int val = find_split.second;
         if (val == -1 && index == -1) {
             make_leaf(samples, is_single_class);
+            return;
         } else {
-            std::shared_ptr<Node> left(new Node);
-            std::shared_ptr<Node> right(new Node);
-            pair<vector<std::vector<int>>, vector<std::vector<int>>> split_samples =
-            split(samples, index, val);
+            left = std::make_shared<Node>();
+            right = std::make_shared<Node>();
+            auto split_samples = split(samples, index, val);
             left->train(split_samples.first);
             right->train(split_samples.second);
         }
@@ -205,15 +203,15 @@ vector<int> compute_unique(const vector<vector<int>> &samples, const int col) {
     // Intoarce toate valorile (se elimina duplicatele)
     // care apar in setul de teste, pe coloana col
     vector<int> uniqueValues;
-    bool freq[256];
-    for(int i = 0; i < 256; i++)
-        freq[i] = false;
+    vector<bool> freq(256, false);
     int samplesSize = samples.size();
-    for(int i = 0; i < samplesSize; i++)
+    for (int i = 0; i < samplesSize; i++)
         freq[samples[i][col]] = true;
-    for(int i = 0; i < 256; i++)
-        if(freq[i] == true)
+    for (int i = 0; i < 256; i++) {
+        if (freq[i] == true) {
             uniqueValues.push_back(i);
+        }
+    }
     return uniqueValues;
 }
 
@@ -228,7 +226,7 @@ pair<vector<vector<int>>, vector<vector<int>>> split(
     for (const auto &i : p.first) left.push_back(samples[i]);
     for (const auto &i : p.second) right.push_back(samples[i]);
 
-    return pair<vector<vector<int>>, vector<vector<int>>>(left, right);
+    return make_pair(left, right);
 }
 
 pair<vector<int>, vector<int>> get_split_as_indexes(
@@ -259,23 +257,20 @@ vector<int> random_dimensions(const int size) {
     randValue *= randValue;
     randValue +=1;
     int dimension = floor(sqrt(size));
-    vector<int> rez;
+    vector<int> result;
     for (int i = 0; i < dimension; ++i) {
         if (i == 0) {
-            int tmp = rand_r(&randValue) % size;
-            while (tmp == 0) {
-                tmp = rand_r(&randValue) % size;
-            }
-            rez.push_back(tmp);
+            int tmp = 1 + rand_r(&randValue) % (size - 1);
+            result.push_back(tmp);
         } else {
             int j = 0;
-            int tmp = rand_r(&randValue) % size;
-            while ((tmp == 0 || rez[j] == tmp) && j < i) {
-                tmp = rand_r(&randValue) % size;
+            int tmp;
+            do {
+                tmp = 1 + rand_r(&randValue) % (size - 1);
                 ++j;
-            }
-            rez.push_back(tmp);
+            } while (result[j] == tmp && j < i);
+            result.push_back(tmp);
         }
     }
-    return rez;
+    return result;
 }
