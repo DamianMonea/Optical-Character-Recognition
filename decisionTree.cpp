@@ -112,6 +112,30 @@ void Node::train(const vector<vector<int>> &samples) {
     // Daca da, acest nod devine frunza, altfel continua algoritmul.
     // 2) Daca nu exista niciun split valid, acest nod devine frunza. Altfel,
     // ia cel mai bun split si continua recursiv
+    bool is_single_class = true;
+    int samplesSize = samples.size();
+    for (int i = 0; i < samplesSize - 1; ++i) {
+        if (samples[i][0] != samples[i+1][0]) {
+            is_single_class = false;
+        }
+    }
+    if (is_single_class == true) {
+        make_leaf(samples, is_single_class);
+    } else {
+        vector<int> dimensions = random_dimensions(785);
+        int index = find_best_split(samples, dimensions).first;
+        int split_val = find_best_split(samples, dimensions).second;
+        if (split_val == -1) {
+            make_leaf(samples, is_single_class);
+        } else {
+            vector<std::vector<int>> samples_left =
+            split(samples, index, split_val).first;
+            vector<std::vector<int>> samples_right =
+            split(samples, index, split_val).second;
+            train(samples_left);
+            train(samples_right);
+        }
+    }
 }
 
 int Node::predict(const vector<int> &image) const {
