@@ -70,8 +70,8 @@ float calculateInformationGain(const vector<vector<int>>& samples,
     }
     pair<vector<int>, vector<int>> children =
     get_split_as_indexes(samples, splitIndex, splitValue);
-    vector<int> left = children.first;
-    vector<int> right = children.second;
+    vector<int>& left = children.first;
+    vector<int>& right = children.second;
     if (!left.empty() && !right.empty()) {
         result -= (left.size() * get_entropy_by_indexes(samples, left)
                 + right.size() * get_entropy_by_indexes(samples, right))/samples.size();
@@ -205,14 +205,14 @@ vector<int> compute_unique(const vector<vector<int>> &samples, const int col) {
     // Intoarce toate valorile (se elimina duplicatele)
     // care apar in setul de teste, pe coloana col
     vector<int> uniqueValues;
-    int freq[256];
+    bool freq[256];
     for(int i = 0; i < 256; i++)
-        freq[i] = 0;
+        freq[i] = false;
     int samplesSize = samples.size();
     for(int i = 0; i < samplesSize; i++)
-        freq[samples[i][col]]++;
+        freq[samples[i][col]] = true;
     for(int i = 0; i < 256; i++)
-        if(freq[i] > 0)
+        if(freq[i] == true)
             uniqueValues.push_back(i);
     return uniqueValues;
 }

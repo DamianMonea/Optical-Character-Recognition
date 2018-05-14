@@ -62,5 +62,19 @@ int RandomForest::predict(const vector<int> &image) {
     // Va intoarce cea mai probabila prezicere pentru testul din argument
     // se va interoga fiecare Tree si se va considera raspunsul final ca
     // fiind cel majoritar
-    return 0;
+    int count[256];
+    for(int i = 0; i < 256; ++i)
+        count[i] = 0;
+    for(int i = 0; i < num_trees; ++i){
+        count[trees[i].predict(image)]++;
+    }
+    int maxim = -10;
+    int res = 0;
+    for(int i = 0; i < 256; ++i)
+        if(count[i] > 0 && count[i] > maxim){
+            maxim = count[i];
+            res = i;
+        }
+    return res;
+    // return 0;
 }
