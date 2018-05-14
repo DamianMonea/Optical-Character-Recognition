@@ -64,11 +64,17 @@ void Node::make_leaf(const vector<vector<int>> &samples,
 
 float calculateInformationGain(vector<vector<int>> samples, int splitIndex, int splitValue){
     float result = 0;
-    result += get_entropy(samples);
-    pair<vector<vector<int>>, vector<vector<int>>> children = split(samples, splitIndex, splitValue);
-    vector<vector<int>> left = children.first;
-    vector<vector<int>> right = children.second;
-    result -= (left.size() * get_entropy(left) + right.size() * get_entropy(right))/samples.size();
+    if (!samples.empty()) {
+        result += get_entropy(samples);
+    }
+    pair<vector<int>, vector<int>> children =
+    get_split_as_indexes(samples, splitIndex, splitValue);
+    vector<int> left = children.first;
+    vector<int> right = children.second;
+    if (!left.empty() && !right.empty()) {
+        result -= (left.size() * get_entropy_by_indexes(samples, left)
+                + right.size() * get_entropy_by_indexes(samples, right))/samples.size();
+    }
     return result;
 }
 
