@@ -104,7 +104,7 @@ pair<int, int> find_best_split(const vector<vector<int>> &samples,
     }
     //value to beat: 46.86% -> maxim < 0.11
 
-    if(maxim < 0.11){
+    if(maxim < 0.1){
         splitIndex = -1;
         splitValue = -1;
     }
@@ -197,11 +197,7 @@ float get_entropy_by_indexes(const vector<vector<int>> &samples,
         if (j != 0) {
            // std::cout << no_tests[j] << " ";
             float p = (float)(j / indexSize);
-<<<<<<< HEAD
-        //    std::cout << p << " "<< std::endl;
-=======
            // std::cout << p << " "<< std::endl;
->>>>>>> 55a8cb8fde44f701ae9ec8140b2b17683eff03b1
             entropy -= p * log2(p); 
         }
     }
@@ -267,7 +263,8 @@ vector<int> random_dimensions(const int size) {
     vector<bool> generated(size, false);
     int to_generate = floor(sqrt(size));
     while(to_generate) {
-        int tmp = 1 + rand_r(&randValue) % (size - 1);
+        // int tmp = 1 + rand_r(&randValue) % (size - 1);
+        int tmp = 1 + rand() % (size - 1);        
         if(!generated[tmp]) {
             generated[tmp] = true;
             result.push_back(tmp);
@@ -275,8 +272,4 @@ vector<int> random_dimensions(const int size) {
         }
     }
     return result;
-<<<<<<< HEAD
 }
-=======
-}
->>>>>>> 55a8cb8fde44f701ae9ec8140b2b17683eff03b1

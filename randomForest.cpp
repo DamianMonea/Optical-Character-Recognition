@@ -24,9 +24,11 @@ vector<vector<int>> get_random_samples(const vector<vector<int>> &samples,
         pushed[i] = false;
     unsigned int x = 0;
     for (int i = 0; i < num_to_return; ++i){
-        x = rand_r(&randValue) % samplesSize;
+        // x = rand_r(&randValue) % samplesSize;
+        x = rand() % samplesSize;        
         while (pushed[x] == true){
-            x = rand_r(&randValue) % samplesSize;
+            // x = rand_r(&randValue) % samplesSize;
+            x = rand() % samplesSize;            
         }
         pushed[x] = true;
         ret.push_back(samples.at(x));
