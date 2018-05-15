@@ -44,18 +44,15 @@ void Node::make_leaf(const vector<vector<int>> &samples,
         is_leaf = true;
     } else {
         int samplesSize = samples.size();
-        vector<int> most_wanted(samplesSize, 0);
-        for (int i = 0; i < samplesSize - 1; ++i) {
-            for (int j = i; j < samplesSize; ++j)
-            if (samples[i][0] == samples[j][0]) {
-                most_wanted[i]++;
-            }
+        vector<int> most_wanted(10, 0);
+        for (int i = 0; i < samplesSize; ++i) {
+            most_wanted[samples[i][0]]++;
         }
         int max = std::numeric_limits<int>::min();
-        for (int i = 0; i < samplesSize; ++i) {
+        for (int i = 0; i < 10; ++i) {
             if (most_wanted[i] > max) {
                 max = most_wanted[i];
-                result = samples[i][0];
+                result = i;
             }
         }
         is_leaf = true;
@@ -64,22 +61,22 @@ void Node::make_leaf(const vector<vector<int>> &samples,
 
 float calculateInformationGain(const vector<vector<int>>& samples,
                                 int splitIndex, int splitValue){
-    float result = 0;
-    if (!samples.empty()) {
-        result += get_entropy(samples);
+    if (samples.empty()) {
+        return -1;
     }
-    pair<vector<int>, vector<int>> children =
-    get_split_as_indexes(samples, splitIndex, splitValue);
+    float result = 0;
+    result += get_entropy(samples);
+    auto children = get_split_as_indexes(samples, splitIndex, splitValue);
     vector<int>& left = children.first;
     vector<int>& right = children.second;
-    if (!left.empty() && !right.empty()) {
-        result -= (left.size() * get_entropy_by_indexes(samples, left)
-                + right.size() * get_entropy_by_indexes(samples, right))
-                /samples.size();
+    if (left.empty() || right.empty()) {
+        return -1;
     }
+    result -= (left.size() * get_entropy_by_indexes(samples, left)
+            + right.size() * get_entropy_by_indexes(samples, right))
+            /samples.size();
     return result;
 }
-
 
 pair<int, int> find_best_split(const vector<vector<int>> &samples,
                                const vector<int> &dimensions) {
@@ -89,7 +86,7 @@ pair<int, int> find_best_split(const vector<vector<int>> &samples,
     // ne referim la split-ul care maximizeaza IG
     // pair-ul intors este format din (split_index, split_value)
     float aux;
-    float maxim = std::numeric_limits<int>::min();
+    float maxim = 0;
     int dimSize = dimensions.size();
     int samplesSize = samples.size();
     int splitIndex = -1, splitValue = -1;
@@ -98,8 +95,7 @@ pair<int, int> find_best_split(const vector<vector<int>> &samples,
         unique_values = compute_unique(samples, dimensions[i]);
         for (auto value : unique_values){
             aux = calculateInformationGain(samples, dimensions[i], value);
-            if (aux > maxim){
-                std::cout << aux << " " << std::endl;
+            if (aux > maxim) {
                 maxim = aux;
                 splitValue = value;
                 splitIndex = dimensions[i];
@@ -129,6 +125,7 @@ void Node::train(const vector<vector<int>> &samples) {
             make_leaf(samples, is_single_class);
             return;
         } else {
+            this->make_decision_node(index, val);
             left = std::make_shared<Node>();
             right = std::make_shared<Node>();
             auto split_samples = split(samples, index, val);
@@ -184,15 +181,18 @@ float get_entropy_by_indexes(const vector<vector<int>> &samples,
     // Cu conditia ca subsetul sa contina testele ale caror indecsi se gasesc in
     // vectorul index (Se considera doar liniile din vectorul index)
     float entropy = 0.0f;
-    int indexSize = index.size();
+    float indexSize = index.size();
     vector<int> no_tests(10, 0);
     for (int i : index) {
         ++no_tests[samples[i][0]];
     }
+    //std::cout << no_tests[samples[indexSize - 1][0]] << " ";
     for (int j : no_tests) {
         if (j != 0) {
-            int p = j / indexSize;
-            entropy -= p * log2(p);
+           // std::cout << no_tests[j] << " ";
+            float p = (float)(j / indexSize);
+           // std::cout << p << " "<< std::endl;
+            entropy -= p * log2(p); 
         }
     }
     return entropy;
@@ -253,23 +253,15 @@ vector<int> random_dimensions(const int size) {
     // Intoarce sqrt(size) dimensiuni diferite pe care sa caute splitul maxim
     // Precizare: Dimensiunile gasite sunt > 0 si < size
     unsigned int randValue = (unsigned int) size;
-    randValue = rand_r(&randValue);
-    randValue *= randValue;
-    randValue +=1;
-    int dimension = floor(sqrt(size));
     vector<int> result;
-    for (int i = 0; i < dimension; ++i) {
-        if (i == 0) {
-            int tmp = 1 + rand_r(&randValue) % (size - 1);
+    vector<bool> generated(size, false);
+    int to_generate = floor(sqrt(size));
+    while(to_generate) {
+        int tmp = 1 + rand_r(&randValue) % (size - 1);
+        if(!generated[tmp]) {
+            generated[tmp] = true;
             result.push_back(tmp);
-        } else {
-            int j = 0;
-            int tmp;
-            do {
-                tmp = 1 + rand_r(&randValue) % (size - 1);
-                ++j;
-            } while (result[j] == tmp && j < i);
-            result.push_back(tmp);
+            to_generate--;
         }
     }
     return result;
