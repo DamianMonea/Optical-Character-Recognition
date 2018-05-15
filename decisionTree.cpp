@@ -102,12 +102,6 @@ pair<int, int> find_best_split(const vector<vector<int>> &samples,
             }
         }
     }
-    //value to beat: 46.86% -> maxim < 0.11
-
-    if(maxim < 0.1){
-        splitIndex = -1;
-        splitValue = -1;
-    }
     return pair<int, int>(splitIndex, splitValue);
 }
 
@@ -192,13 +186,13 @@ float get_entropy_by_indexes(const vector<vector<int>> &samples,
     for (int i : index) {
         ++no_tests[samples[i][0]];
     }
-    //std::cout << no_tests[samples[indexSize - 1][0]] << " ";
+    // std::cout << no_tests[samples[indexSize - 1][0]] << " ";
     for (int j : no_tests) {
         if (j != 0) {
            // std::cout << no_tests[j] << " ";
             float p = (float)(j / indexSize);
            // std::cout << p << " "<< std::endl;
-            entropy -= p * log2(p); 
+            entropy -= p * log2(p);
         }
     }
     return entropy;
@@ -258,14 +252,14 @@ vector<int> random_dimensions(const int size) {
     // TODO(you)
     // Intoarce sqrt(size) dimensiuni diferite pe care sa caute splitul maxim
     // Precizare: Dimensiunile gasite sunt > 0 si < size
+    srand(time(NULL));
     unsigned int randValue = (unsigned int) size;
     vector<int> result;
     vector<bool> generated(size, false);
     int to_generate = floor(sqrt(size));
-    while(to_generate) {
-        // int tmp = 1 + rand_r(&randValue) % (size - 1);
-        int tmp = 1 + rand() % (size - 1);        
-        if(!generated[tmp]) {
+    while (to_generate) {
+        int tmp = 1 + random() % (size - 1);
+        if (!generated[tmp]) {
             generated[tmp] = true;
             result.push_back(tmp);
             to_generate--;
