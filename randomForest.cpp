@@ -10,6 +10,8 @@ using std::vector;
 using std::pair;
 using std::string;
 using std::mt19937;
+using std::cout;
+using std::endl;
 
 vector<vector<int>> get_random_samples(const vector<vector<int>> &samples,
                                        int num_to_return) {
@@ -17,6 +19,7 @@ vector<vector<int>> get_random_samples(const vector<vector<int>> &samples,
     // Intoarce un vector de marime num_to_return cu elemente random,
     // diferite din samples
     vector<vector<int>> ret;
+    srand(time(NULL));
     int samplesSize = samples.size();
     unsigned int randValue = (unsigned int) num_to_return;
     bool *pushed = new bool[samplesSize];
@@ -24,11 +27,9 @@ vector<vector<int>> get_random_samples(const vector<vector<int>> &samples,
         pushed[i] = false;
     unsigned int x = 0;
     for (int i = 0; i < num_to_return; ++i){
-        // x = rand_r(&randValue) % samplesSize;
-        x = rand() % samplesSize;        
+        x = random() % samplesSize;
         while (pushed[x] == true){
-            // x = rand_r(&randValue) % samplesSize;
-            x = rand() % samplesSize;            
+            x = random() % samplesSize;
         }
         pushed[x] = true;
         ret.push_back(samples.at(x));
@@ -64,19 +65,21 @@ int RandomForest::predict(const vector<int> &image) {
     // Va intoarce cea mai probabila prezicere pentru testul din argument
     // se va interoga fiecare Tree si se va considera raspunsul final ca
     // fiind cel majoritar
-    int count[256];
-    for(int i = 0; i < 256; ++i)
+    int count[10];
+    for (int i = 0; i < 10; ++i)
         count[i] = 0;
-    for(int i = 0; i < num_trees; ++i){
+    for (int i = 0; i < num_trees; ++i){
         count[trees[i].predict(image)]++;
     }
     int maxim = -10;
     int res = 0;
-    for(int i = 0; i < 256; ++i)
-        if(count[i] > 0 && count[i] > maxim){
+    for (int i = 0; i < 10; ++i) {
+        if (count[i] > 0 && count[i] > maxim){
             maxim = count[i];
             res = i;
         }
+    }
+    // cout << res;
+    // cout << endl;
     return res;
-    // return 0;
 }
