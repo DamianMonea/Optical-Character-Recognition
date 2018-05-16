@@ -2,8 +2,8 @@ Iliescu Oana-Maria
 Monea Damian
 312CA
 
-Data inceperii temei: 10-05-2018
-Data terminarii temei: 15-05-2018
+Data inceperii temei: 10.05.2018
+Data terminarii temei: 15.05.2018
 
 Impartirea sarcinilor:
 
