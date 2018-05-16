@@ -19,7 +19,6 @@ vector<vector<int>> get_random_samples(const vector<vector<int>> &samples,
     // Intoarce un vector de marime num_to_return cu elemente random,
     // diferite din samples
     vector<vector<int>> ret;
-    srand(time(NULL));
     int samplesSize = samples.size();
     unsigned int randValue = (unsigned int) num_to_return;
     bool *pushed = new bool[samplesSize];
@@ -79,7 +78,5 @@ int RandomForest::predict(const vector<int> &image) {
             res = i;
         }
     }
-    // cout << res;
-    // cout << endl;
     return res;
 }
