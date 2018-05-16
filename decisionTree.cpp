@@ -252,8 +252,6 @@ vector<int> random_dimensions(const int size) {
     // TODO(you)
     // Intoarce sqrt(size) dimensiuni diferite pe care sa caute splitul maxim
     // Precizare: Dimensiunile gasite sunt > 0 si < size
-    srand(time(NULL));
-    unsigned int randValue = (unsigned int) size;
     vector<int> result;
     vector<bool> generated(size, false);
     int to_generate = floor(sqrt(size));
